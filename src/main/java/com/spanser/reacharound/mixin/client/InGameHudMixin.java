@@ -4,13 +4,9 @@ import com.spanser.reacharound.Reacharound;
 import com.spanser.reacharound.client.feature.PlacementFeature;
 import com.spanser.reacharound.config.ReacharoundConfig;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix4f;
+import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,15 +19,11 @@ public class InGameHudMixin {
     @Shadow
     @Final
     private MinecraftClient client;
-    @Shadow
-    private int scaledHeight;
-    @Shadow
-    private int scaledWidth;
 
     private ReacharoundConfig config;
 
     @Inject(method = "render", at = @At(value = "TAIL"))
-    public void renderPlacementAssistText(DrawContext context, float tickDelta, CallbackInfo ci) {
+    public void renderPlacementAssistText(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         config = Reacharound.getInstance().config;
 
         if (!canReachAround()) {
@@ -39,12 +31,12 @@ public class InGameHudMixin {
         }
 
         context.getMatrices().push();
-        context.getMatrices().translate(scaledWidth / 2F, scaledHeight / 2f - 4, 0);
+        context.getMatrices().translate(context.getScaledWindowWidth() / 2F, context.getScaledWindowHeight() / 2f - 4, 0);
 
         int duration = config.indicatorAnimationDuration;
         float scale;
         if (config.indicatorAnimationDuration > 0) {
-            scale = Math.min(duration, PlacementFeature.ticksDisplayed + tickDelta) / ((float) (duration));
+            scale = Math.min(duration, PlacementFeature.ticksDisplayed + tickCounter.getTickDelta(false)) / ((float) (duration));
         } else {
             scale = 1;
         }
