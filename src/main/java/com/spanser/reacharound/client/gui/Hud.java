@@ -1,29 +1,22 @@
-package com.spanser.reacharound.mixin.client;
+package com.spanser.reacharound.client.gui;
 
 import com.spanser.reacharound.Reacharound;
 import com.spanser.reacharound.client.feature.PlacementFeature;
 import com.spanser.reacharound.config.ReacharoundConfig;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderTickCounter;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(InGameHud.class)
-public class InGameHudMixin {
-    @Shadow
-    @Final
+public class Hud {
     private MinecraftClient client;
-
     private ReacharoundConfig config;
 
-    @Inject(method = "render", at = @At(value = "TAIL"))
-    public void renderPlacementAssistText(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+    public Hud(MinecraftClient client, ReacharoundConfig config) {
+        this.client = client;
+        this.config = config;
+    }
+
+    public void renderPlacementAssistText(DrawContext context, float tickDelta) {
         config = Reacharound.getInstance().config;
 
         if (!canReachAround()) {
@@ -36,7 +29,7 @@ public class InGameHudMixin {
         int duration = config.indicatorAnimationDuration;
         float scale;
         if (config.indicatorAnimationDuration > 0) {
-            scale = Math.min(duration, PlacementFeature.ticksDisplayed + tickCounter.getTickDelta(false)) / ((float) (duration));
+            scale = Math.min(duration, PlacementFeature.ticksDisplayed + tickDelta) / ((float) (duration));
         } else {
             scale = 1;
         }
